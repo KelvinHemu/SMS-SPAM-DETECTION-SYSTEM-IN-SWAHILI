@@ -1,0 +1,13 @@
+{
+  "model_type": "MultinomialNB",
+  "accuracy": 0.9878401852924146,
+  "training_samples": 6904,
+  "test_samples": 1727,
+  "features": 32839,
+  "classes": [
+    "ham",
+    "spam"
+  ],
+  "generalization_accuracy": 1.0,
+  "timestamp": "2025-05-31 15:27:52"
+}

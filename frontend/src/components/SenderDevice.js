@@ -1,8 +1,9 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Send, Phone, ArrowLeft, MoreVertical, Smile } from 'lucide-react';
 import { spamDetectionAPI } from '../services/api';
+import ReactDOM from 'react-dom/client';
 
-const SenderDevice = ({ onMessageSent }) => {
+const SenderDevice = ({ onMessageSent, scenarioSelectorContainerId }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [selectedScenario, setSelectedScenario] = useState("verified1");
@@ -70,6 +71,50 @@ const SenderDevice = ({ onMessageSent }) => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  // Effect to render scenario selector in external container if ID provided
+  useEffect(() => {
+    if (scenarioSelectorContainerId) {
+      const container = document.getElementById(scenarioSelectorContainerId);
+      if (container) {
+        const root = ReactDOM.createRoot(container);
+        root.render(
+          <div className="w-[280px] bg-blue-50 rounded-xl p-4 shadow-md">
+            <label className="block text-sm font-medium text-blue-800 mb-2">
+              Select Test Scenario:
+            </label>
+            <select 
+              value={selectedScenario}
+              onChange={(e) => setSelectedScenario(e.target.value)}
+              className="w-full text-sm px-3 py-2 border border-blue-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <optgroup label="✅ Verified Numbers">
+                {Object.entries(phoneScenarios)
+                  .filter(([key, scenario]) => scenario.category === 'verified')
+                  .map(([key, scenario]) => (
+                    <option key={key} value={key}>
+                      {scenario.label}
+                    </option>
+                  ))}
+              </optgroup>
+              <optgroup label="🚨 Flagged Numbers">
+                {Object.entries(phoneScenarios)
+                  .filter(([key, scenario]) => scenario.category === 'flagged')
+                  .map(([key, scenario]) => (
+                    <option key={key} value={key}>
+                      {scenario.label}
+                    </option>
+                  ))}
+              </optgroup>
+            </select>
+            <div className="text-sm text-blue-600 mt-2">
+              💡 Same message, different results based on sender reputation!
+            </div>
+          </div>
+        );
+      }
+    }
+  }, [scenarioSelectorContainerId, selectedScenario]);
 
   const sendMessage = async () => {
     if (!newMessage.trim()) return;
@@ -151,34 +196,36 @@ const SenderDevice = ({ onMessageSent }) => {
   return (
     <div className="flex items-start gap-8">
       {/* Phone Scenario Selector - LEFT SIDE */}
-      <div className="w-[280px] bg-blue-50 rounded-xl p-4 shadow-md">
-        <label className="block text-sm font-medium text-blue-800 mb-2">
-          Select Test Scenario:
-        </label>
-        <select 
-          value={selectedScenario}
-          onChange={(e) => setSelectedScenario(e.target.value)}
-          className="w-full text-sm px-3 py-2 border border-blue-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-        >
-          <optgroup label="✅ Verified Numbers">
-            {Object.entries(phoneScenarios).filter(([key, scenario]) => scenario.category === 'verified').map(([key, scenario]) => (
-              <option key={key} value={key}>
-                {scenario.label}
-              </option>
-            ))}
-          </optgroup>
-          <optgroup label="🚨 Flagged Numbers">
-            {Object.entries(phoneScenarios).filter(([key, scenario]) => scenario.category === 'flagged').map(([key, scenario]) => (
-              <option key={key} value={key}>
-                {scenario.label}
-              </option>
-            ))}
-          </optgroup>
-        </select>
-        <div className="text-sm text-blue-600 mt-2">
-          💡 Same message, different results based on sender reputation!
+      {!scenarioSelectorContainerId && (
+        <div className="w-[280px] bg-blue-50 rounded-xl p-4 shadow-md">
+          <label className="block text-sm font-medium text-blue-800 mb-2">
+            Select Test Scenario:
+          </label>
+          <select 
+            value={selectedScenario}
+            onChange={(e) => setSelectedScenario(e.target.value)}
+            className="w-full text-sm px-3 py-2 border border-blue-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          >
+            <optgroup label="✅ Verified Numbers">
+              {Object.entries(phoneScenarios).filter(([key, scenario]) => scenario.category === 'verified').map(([key, scenario]) => (
+                <option key={key} value={key}>
+                  {scenario.label}
+                </option>
+              ))}
+            </optgroup>
+            <optgroup label="🚨 Flagged Numbers">
+              {Object.entries(phoneScenarios).filter(([key, scenario]) => scenario.category === 'flagged').map(([key, scenario]) => (
+                <option key={key} value={key}>
+                  {scenario.label}
+                </option>
+              ))}
+            </optgroup>
+          </select>
+          <div className="text-sm text-blue-600 mt-2">
+            💡 Same message, different results based on sender reputation!
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="w-[360px] h-[780px] bg-gradient-to-b from-gray-900 to-black shadow-2xl rounded-3xl overflow-hidden flex flex-col relative">
         

@@ -91,6 +91,11 @@ export const spamDetectionAPI = {
       console.error('Error fetching Swahili labels:', error);
       throw error;
     }
+  },
+
+  submitTrainingData: async (data) => {
+    const response = await axios.post(`${API_BASE_URL}/admin/training-data`, data);
+    return response.data;
   }
 };
 

@@ -233,7 +233,7 @@ const SenderDevice = ({ onMessageSent }) => {
               </div>
               <div>
                 <div className="font-semibold text-white text-sm">{currentContact.number}</div>
-                <div className={`text-xs ${
+                <div className={`text-[10px] ${
                   currentScenario.category === 'verified' ? 'text-green-300' : 
                   currentScenario.category === 'flagged' ? 'text-red-300' : 'text-gray-300'
                 }`}>

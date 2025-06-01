@@ -52,10 +52,15 @@ function App() {
           <div className="mt-4 p-4 bg-yellow-50 rounded-lg">
             <h4 className="font-medium text-yellow-800 mb-2">Try these sample messages:</h4>
             <ul className="text-sm text-yellow-700 space-y-1">
-              <li>• "Hello, how are you?" (Clean)</li>
-              <li>• "Click here to win money: https://bit.ly/scam" (Spam)</li>
-              <li>• "Daktari mkuu anaponya kila ugonjwa" (Traditional healer spam)</li>
+              <li>• <strong>"Hello, how are you?"</strong> → Normal delivery (no label)</li>
+              <li>• <strong>"FREE MONEY! Click now!"</strong> → ⚠️ Tahadhari: Epuka Matapeli</li>
+              <li>• <strong>"Click here to win money: https://bit.ly/scam"</strong> → 🚫 Blocked (won't reach receiver)</li>
+              <li>• <strong>"Daktari mkuu anaponya kila ugonjwa"</strong> → 🚫 Blocked (traditional healer spam)</li>
+              <li>• <strong>"Congratulations! You won a prize"</strong> → ⚠️ Tahadhari: Epuka Matapeli</li>
             </ul>
+            <p className="text-xs text-yellow-600 mt-2">
+              ✨ Clean messages appear normal, suspicious messages get Swahili warning labels!
+            </p>
           </div>
         </div>
       </div>

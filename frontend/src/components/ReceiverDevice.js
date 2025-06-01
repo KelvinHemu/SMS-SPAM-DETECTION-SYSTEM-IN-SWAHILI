@@ -41,29 +41,25 @@ const ReceiverDevice = ({ receivedMessages = [] }) => {
     setMessages(formattedMessages);
   }, [receivedMessages]);
 
-  // Generate spam detection label for display
+  // Generate spam detection label for display - matches message_labeler.py
   const getSpamLabel = (analysisResult) => {
-    const { decision, confidence } = analysisResult;
+    const { decision } = analysisResult;
     
     switch (decision) {
       case 'CLEAN':
-        return null; // No label needed for clean messages
+        // No label for clean messages - deliver as normal SMS
+        return null;
       case 'CONTENT_WARNING':
-        return {
-          type: 'warning',
-          text: `⚠️ Content Warning (${Math.round(confidence * 100)}% confidence)`,
-          color: 'bg-yellow-100 text-yellow-800 border-yellow-200'
-        };
       case 'SENDER_WARNING':
         return {
-          type: 'sender',
-          text: `🚨 Sender Warning (${Math.round(confidence * 100)}% confidence)`,
-          color: 'bg-orange-100 text-orange-800 border-orange-200'
+          type: 'warning',
+          text: "⚠️ Tahadhari: Epuka Matapeli",  // Warning: Avoid Fraud/Scams (Swahili)
+          color: 'bg-yellow-100 text-yellow-800 border-yellow-200'
         };
       case 'BLOCKED':
         return {
           type: 'blocked',
-          text: `🚫 Message Blocked - Spam Detected (${Math.round(confidence * 100)}% confidence)`,
+          text: "🚫 Imezuiliwa: SPAM",  // Blocked: SPAM (Swahili)
           color: 'bg-red-100 text-red-800 border-red-200'
         };
       default:
@@ -213,21 +209,6 @@ const ReceiverDevice = ({ receivedMessages = [] }) => {
                     
                     <div className="text-xs mt-2 flex items-center gap-1 text-gray-500">
                       <span>{message.timestamp}</span>
-                      {message.decision && (
-                        <span className={`text-xs px-1 py-0.5 rounded ${
-                          message.decision === 'CLEAN' ? 'bg-green-100 text-green-600' :
-                          message.decision === 'CONTENT_WARNING' ? 'bg-yellow-100 text-yellow-600' :
-                          message.decision === 'SENDER_WARNING' ? 'bg-orange-100 text-orange-600' :
-                          'bg-red-100 text-red-600'
-                        }`}>
-                          {message.decision}
-                        </span>
-                      )}
-                      {message.confidence && (
-                        <span className="text-xs text-gray-400">
-                          ({Math.round(message.confidence * 100)}%)
-                        </span>
-                      )}
                     </div>
                   </div>
                 </div>

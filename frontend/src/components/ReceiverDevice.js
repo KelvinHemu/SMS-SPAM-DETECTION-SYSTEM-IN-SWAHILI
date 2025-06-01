@@ -180,9 +180,15 @@ const ReceiverDevice = ({ receivedMessages = [] }) => {
             )}
             
             {message.sender === "contact" ? (
-              <div className="flex justify-start mb-2">
-                <div className="max-w-xs">
-                  <div className="relative px-4 py-3 rounded-2xl shadow-sm bg-white border border-gray-100 rounded-bl-md shadow-md">
+              // Incoming message - LEFT SIDE
+              <div className="flex justify-start mb-3">
+                <div className="max-w-[85%]">
+                  {/* Timestamp above message */}
+                  <div className="text-xs text-gray-500 mb-1 px-1">
+                    {message.timestamp}
+                  </div>
+                  
+                  <div className="px-4 py-3 rounded-2xl rounded-tl-md bg-white border border-gray-200 shadow-sm">
                     
                     {/* Spam Detection Label */}
                     {renderSpamLabel(message.spamLabel)}
@@ -206,24 +212,25 @@ const ReceiverDevice = ({ receivedMessages = [] }) => {
                         message.text
                       )}
                     </div>
-                    
-                    <div className="text-xs mt-2 flex items-center gap-1 text-gray-500">
-                      <span>{message.timestamp}</span>
-                    </div>
                   </div>
                 </div>
               </div>
             ) : (
-              <div className="flex justify-end mb-2">
-                <div className="max-w-xs">
-                  <div className="relative px-4 py-3 rounded-2xl shadow-sm bg-gradient-to-r from-green-500 to-green-600 text-white rounded-br-md transform hover:scale-105 transition-transform">
+              // Outgoing message - RIGHT SIDE
+              <div className="flex justify-end mb-3">
+                <div className="max-w-[85%]">
+                  {/* Timestamp above message */}
+                  <div className="text-xs text-gray-500 mb-1 px-1 text-right">
+                    {message.timestamp}
+                  </div>
+                  
+                  <div className="px-4 py-3 rounded-2xl rounded-tr-md bg-gradient-to-r from-green-500 to-green-600 text-white shadow-sm">
                     
                     <div className="text-sm leading-relaxed text-white">
                       {message.text}
                     </div>
                     
-                    <div className="text-xs mt-2 flex items-center gap-1 text-green-100 justify-end">
-                      <span>{message.timestamp}</span>
+                    <div className="text-xs mt-2 flex items-center gap-2 text-green-100 justify-end">
                       <div className="flex gap-1">
                         <div className={`w-1 h-1 rounded-full ${message.isRead ? 'bg-green-200' : 'bg-green-300'}`}></div>
                         <div className={`w-1 h-1 rounded-full ${message.isRead ? 'bg-green-200' : 'bg-green-300'}`}></div>

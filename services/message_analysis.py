@@ -14,6 +14,7 @@ from api.models import (
 from services.text_classification import TextClassificationService
 from services.phone_validation import PhoneValidationService
 from services.decision_engine import DecisionEngineService
+from services.message_delivery import MessageDeliveryService
 
 logger = get_logger()
 
@@ -26,6 +27,7 @@ class MessageAnalysisService:
         self.text_service = TextClassificationService()
         self.phone_service = PhoneValidationService()
         self.decision_service = DecisionEngineService()
+        self.delivery_service = MessageDeliveryService()
         
         # Statistics tracking
         self.stats = {
@@ -41,7 +43,7 @@ class MessageAnalysisService:
         
         logger.info("Message Analysis Service initialized")
     
-    def analyze_message(self, request: MessageAnalysisRequest) -> MessageAnalysisResponse:
+    async def analyze_message(self, request: MessageAnalysisRequest) -> MessageAnalysisResponse:
         """
         Perform complete message analysis
         
@@ -54,20 +56,41 @@ class MessageAnalysisService:
         start_time = time.time()
         message_id = create_message_id()
         
+        # Get sender phone (prefer sender_phone, fallback to phone_number)
+        sender_phone = request.sender_phone or request.phone_number
+        
         logger.info(f"Starting analysis for message {message_id}")
+        logger.debug(f"[{message_id}] Sender: {sender_phone}, Receiver: {request.receiver_phone}")
         
         try:
             # Step 1: Text Classification
             logger.debug(f"[{message_id}] Step 1: Text classification")
             text_analysis = self.text_service.classify_text(request.text)
             
-            # Step 2: Phone Validation  
+            # Step 2: Phone Validation (focus on sender phone for spam detection)
             logger.debug(f"[{message_id}] Step 2: Phone validation")
-            phone_analysis = self.phone_service.validate_phone(request.phone_number)
+            phone_analysis = self.phone_service.validate_phone(sender_phone)
             
             # Step 3: Decision Making
             logger.debug(f"[{message_id}] Step 3: Decision making")
             combined_analysis = self.decision_service.make_decision(text_analysis, phone_analysis)
+            
+            # Step 4: Message Delivery (if receiver_phone provided)
+            delivery_result = None
+            if request.receiver_phone:
+                logger.debug(f"[{message_id}] Step 4: Message delivery to {request.receiver_phone}")
+                try:
+                    delivery_result = await self.delivery_service.deliver_message(
+                        receiver_phone=request.receiver_phone,
+                        message_text=request.text,  # For now, deliver original text
+                        decision=combined_analysis.decision,
+                        sender_phone=sender_phone,
+                        original_message=request.text
+                    )
+                    logger.debug(f"[{message_id}] Delivery result: {delivery_result.status}")
+                except Exception as e:
+                    logger.error(f"[{message_id}] Delivery failed: {str(e)}")
+                    # Don't fail the whole analysis if delivery fails
             
             # Calculate total processing time
             total_processing_time = (time.time() - start_time) * 1000
@@ -82,6 +105,7 @@ class MessageAnalysisService:
                 phone_status=phone_analysis.status.value,
                 phone_risk_score=phone_analysis.risk_score,
                 reasoning=combined_analysis.decision_reasoning,
+                delivery_result=delivery_result,
                 processing_time_ms=total_processing_time
             )
             

@@ -4,7 +4,7 @@ Defines request/response schemas and internal data types
 """
 
 from typing import Optional, Literal, Dict, Any
-from pydantic import BaseModel, Field, field_validator
+from pydantic import BaseModel, Field, field_validator, model_validator
 from datetime import datetime
 from enum import Enum
 import re
@@ -32,6 +32,14 @@ class PhoneValidationStatus(str, Enum):
     UNKNOWN = "unknown"
 
 
+class DeliveryStatus(str, Enum):
+    """Message delivery status"""
+    DELIVERED = "delivered"
+    BLOCKED = "blocked"
+    FAILED = "failed"
+    PENDING = "pending"
+
+
 # Request Models
 class MessageAnalysisRequest(BaseModel):
     """Request model for message analysis"""
@@ -41,9 +49,19 @@ class MessageAnalysisRequest(BaseModel):
         min_length=1,
         max_length=1000
     )
-    phone_number: str = Field(
-        ...,
-        description="Sender's phone number"
+    
+    # Support both old single phone and new two-party format
+    phone_number: Optional[str] = Field(
+        None,
+        description="Sender's phone number (legacy format)"
+    )
+    sender_phone: Optional[str] = Field(
+        None,
+        description="Sender's phone number (two-party format)"
+    )
+    receiver_phone: Optional[str] = Field(
+        None,
+        description="Receiver's phone number (two-party format)"
     )
     
     @field_validator('text')
@@ -53,9 +71,11 @@ class MessageAnalysisRequest(BaseModel):
             raise ValueError('Text cannot be empty or only whitespace')
         return v.strip()
     
-    @field_validator('phone_number')
+    @field_validator('phone_number', 'sender_phone', 'receiver_phone')
     @classmethod
     def validate_phone(cls, v):
+        if v is None:
+            return v
         # Check basic phone format
         if not re.match(r"^[\d\+\-\s\(\)]{7,15}$", v):
             raise ValueError('Invalid phone number format')
@@ -65,6 +85,18 @@ class MessageAnalysisRequest(BaseModel):
         if len(cleaned) < 7 or len(cleaned) > 15:
             raise ValueError('Phone number must contain 7-15 digits')
         return v
+    
+    @model_validator(mode='after')
+    def validate_phone_numbers(self):
+        """Ensure at least one phone number is provided"""
+        if not self.phone_number and not self.sender_phone:
+            raise ValueError('Either phone_number or sender_phone must be provided')
+        
+        # If using legacy format, copy to sender_phone for consistency
+        if self.phone_number and not self.sender_phone:
+            self.sender_phone = self.phone_number
+        
+        return self
 
 
 # Internal Analysis Models
@@ -95,6 +127,20 @@ class CombinedAnalysisResult(BaseModel):
     processing_time_ms: float
 
 
+class MessageDeliveryResult(BaseModel):
+    """Result of message delivery attempt"""
+    delivery_id: str = Field(description="Unique delivery identifier")
+    status: DeliveryStatus = Field(description="Delivery status")
+    delivered_message: Optional[str] = Field(default=None, description="Message that was delivered")
+    error_message: Optional[str] = Field(default=None, description="Error message if delivery failed")
+    delivery_time: datetime = Field(default_factory=datetime.utcnow, description="Delivery timestamp")
+    
+    class Config:
+        json_encoders = {
+            datetime: lambda v: v.isoformat()
+        }
+
+
 # Response Models
 class MessageAnalysisResponse(BaseModel):
     """Response model for message analysis"""
@@ -123,6 +169,12 @@ class MessageAnalysisResponse(BaseModel):
     
     # Explanation
     reasoning: str = Field(description="Human-readable explanation of the decision")
+    
+    # Delivery information (for two-party messaging)
+    delivery_result: Optional[MessageDeliveryResult] = Field(
+        default=None, 
+        description="Message delivery result (if applicable)"
+    )
     
     # Metadata
     timestamp: datetime = Field(default_factory=datetime.utcnow)

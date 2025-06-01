@@ -15,6 +15,10 @@ from main import app
 # Create test client
 client = TestClient(app)
 
+# Test configuration
+API_BASE_URL = "http://localhost:3000/api/v1"
+TIMEOUT = 10
+
 
 def test_root_endpoint():
     """Test the root endpoint"""
@@ -193,8 +197,16 @@ if __name__ == "__main__":
         print("\n🌐 API Ready for Production!")
         print("\n📚 Next Steps:")
         print("• Start server: python main.py")
-        print("• View docs: http://localhost:8000/docs")
-        print("• Health check: http://localhost:8000/api/v1/health")
+        print("• View docs: http://localhost:3000/docs")
+        print("• Health check: http://localhost:3000/api/v1/health")
+        
+        failed = 0
+        if failed == 0:
+            print("🎉 All tests passed! API is working correctly.")
+            print("• View docs: http://localhost:3000/docs")
+            print("• Health check: http://localhost:3000/api/v1/health")
+        else:
+            print("⚠️ Some tests failed. Check the API server and try again.")
         
     except Exception as e:
         print(f"\n❌ TEST FAILED: {str(e)}")

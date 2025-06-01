@@ -72,10 +72,12 @@ async def analyze_message(
         HTTPException: For validation errors or processing failures
     """
     try:
-        logger.info(f"Received analysis request for phone: {request.phone_number}")
+        # Get sender phone for logging (prefer sender_phone, fallback to phone_number)
+        sender_phone = request.sender_phone or request.phone_number
+        logger.info(f"Received analysis request for sender: {sender_phone}, receiver: {request.receiver_phone}")
         
         # Perform analysis
-        result = service.analyze_message(request)
+        result = await service.analyze_message(request)
         
         logger.info(f"Analysis complete: {result.decision} (confidence: {result.confidence:.3f})")
         return result

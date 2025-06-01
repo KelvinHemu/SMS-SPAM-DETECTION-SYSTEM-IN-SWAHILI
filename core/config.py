@@ -14,7 +14,7 @@ class Settings(BaseSettings):
     # API Settings
     debug: bool = Field(default=True, description="Debug mode")
     api_host: str = Field(default="0.0.0.0", description="API host")
-    api_port: int = Field(default=8000, description="API port")
+    api_port: int = Field(default=3000, description="API port")
     api_title: str = Field(default="Spam Detection API", description="API title")
     api_version: str = Field(default="1.0.0", description="API version")
     

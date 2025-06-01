@@ -3,12 +3,48 @@ import { Send, Phone, ArrowLeft, MoreVertical, Smile } from 'lucide-react';
 import { spamDetectionAPI } from '../services/api';
 import ReactDOM from 'react-dom/client';
 
+const ScenarioSelector = ({ selectedScenario, onScenarioChange, phoneScenarios }) => (
+  <div className="w-[280px] bg-blue-50 rounded-xl p-4 shadow-md">
+    <label className="block text-sm font-medium text-blue-800 mb-2">
+      Select Test Scenario:
+    </label>
+    <select 
+      value={selectedScenario}
+      onChange={(e) => onScenarioChange(e.target.value)}
+      className="w-full text-sm px-3 py-2 border border-blue-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+    >
+      <optgroup label="✅ Verified Numbers">
+        {Object.entries(phoneScenarios)
+          .filter(([key, scenario]) => scenario.category === 'verified')
+          .map(([key, scenario]) => (
+            <option key={key} value={key}>
+              {scenario.label}
+            </option>
+          ))}
+      </optgroup>
+      <optgroup label="🚨 Flagged Numbers">
+        {Object.entries(phoneScenarios)
+          .filter(([key, scenario]) => scenario.category === 'flagged')
+          .map(([key, scenario]) => (
+            <option key={key} value={key}>
+              {scenario.label}
+            </option>
+          ))}
+      </optgroup>
+    </select>
+    <div className="text-sm text-blue-600 mt-2">
+      💡 Same message, different results based on sender reputation!
+    </div>
+  </div>
+);
+
 const SenderDevice = ({ onMessageSent, scenarioSelectorContainerId }) => {
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState('');
   const [selectedScenario, setSelectedScenario] = useState("verified1");
   const messagesEndRef = useRef(null);
   const textareaRef = useRef(null);
+  const scenarioRootRef = useRef(null);
 
   // Phone scenarios for testing
   const phoneScenarios = {
@@ -74,46 +110,27 @@ const SenderDevice = ({ onMessageSent, scenarioSelectorContainerId }) => {
 
   // Effect to render scenario selector in external container if ID provided
   useEffect(() => {
-    if (scenarioSelectorContainerId) {
-      const container = document.getElementById(scenarioSelectorContainerId);
-      if (container) {
-        const root = ReactDOM.createRoot(container);
-        root.render(
-          <div className="w-[280px] bg-blue-50 rounded-xl p-4 shadow-md">
-            <label className="block text-sm font-medium text-blue-800 mb-2">
-              Select Test Scenario:
-            </label>
-            <select 
-              value={selectedScenario}
-              onChange={(e) => setSelectedScenario(e.target.value)}
-              className="w-full text-sm px-3 py-2 border border-blue-300 rounded-lg bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            >
-              <optgroup label="✅ Verified Numbers">
-                {Object.entries(phoneScenarios)
-                  .filter(([key, scenario]) => scenario.category === 'verified')
-                  .map(([key, scenario]) => (
-                    <option key={key} value={key}>
-                      {scenario.label}
-                    </option>
-                  ))}
-              </optgroup>
-              <optgroup label="🚨 Flagged Numbers">
-                {Object.entries(phoneScenarios)
-                  .filter(([key, scenario]) => scenario.category === 'flagged')
-                  .map(([key, scenario]) => (
-                    <option key={key} value={key}>
-                      {scenario.label}
-                    </option>
-                  ))}
-              </optgroup>
-            </select>
-            <div className="text-sm text-blue-600 mt-2">
-              💡 Same message, different results based on sender reputation!
-            </div>
-          </div>
-        );
-      }
+    const container = document.getElementById(scenarioSelectorContainerId);
+    if (container && !scenarioRootRef.current) {
+      scenarioRootRef.current = ReactDOM.createRoot(container);
     }
+
+    if (scenarioRootRef.current) {
+      scenarioRootRef.current.render(
+        <ScenarioSelector 
+          selectedScenario={selectedScenario}
+          onScenarioChange={setSelectedScenario}
+          phoneScenarios={phoneScenarios}
+        />
+      );
+    }
+
+    return () => {
+      if (scenarioRootRef.current) {
+        scenarioRootRef.current.unmount();
+        scenarioRootRef.current = null;
+      }
+    };
   }, [scenarioSelectorContainerId, selectedScenario]);
 
   const sendMessage = async () => {

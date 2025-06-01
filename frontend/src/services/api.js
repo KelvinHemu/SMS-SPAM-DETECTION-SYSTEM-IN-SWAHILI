@@ -34,7 +34,7 @@ api.interceptors.response.use(
 );
 
 export const spamDetectionAPI = {
-  // Analyze message with two-party flow
+  // Analyze message
   analyzeMessage: async (senderPhone, receiverPhone, messageText) => {
     try {
       const response = await api.post('/analyze', {
@@ -96,6 +96,53 @@ export const spamDetectionAPI = {
   submitTrainingData: async (data) => {
     const response = await axios.post(`${API_BASE_URL}/admin/training-data`, data);
     return response.data;
+  },
+
+  // Add training data
+  addTrainingData: async (data) => {
+    try {
+      const response = await api.post('/training/add', {
+        text: data.text,
+        is_spam: data.is_spam
+      });
+      return response.data;
+    } catch (error) {
+      console.error('Error submitting training data:', error);
+      throw error;
+    }
+  },
+
+  // Get system metrics
+  getMetrics: async () => {
+    try {
+      const response = await api.get('/metrics');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching metrics:', error);
+      throw error;
+    }
+  },
+
+  // Get detailed system stats
+  getSystemStats: async () => {
+    try {
+      const response = await api.get('/stats');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching system stats:', error);
+      throw error;
+    }
+  },
+
+  // Get detailed health status
+  getDetailedHealth: async () => {
+    try {
+      const response = await api.get('/health/detailed');
+      return response.data;
+    } catch (error) {
+      console.error('Error fetching detailed health:', error);
+      throw error;
+    }
   }
 };
 

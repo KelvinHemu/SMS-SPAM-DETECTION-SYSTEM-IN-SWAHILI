@@ -21,26 +21,22 @@ const HomePage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="container mx-auto px-4 py-8">
-        {/* Main Title */}
-        <h1 className="text-4xl font-bold text-center mb-12 text-gray-800">
-          Swahili SMS Spam Detection
-        </h1>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-8">
+      {/* Main Title */}
+      <h1 className="text-4xl font-bold text-center mb-12 text-gray-800">
+        Swahili SMS Spam Detection
+      </h1>
 
-        {/* Devices Container */}
-        <div className="flex flex-col lg:flex-row items-center justify-center gap-8 mb-12">
-          {/* Left Column - Sender Device */}
-          <div className="flex flex-col items-center gap-6">
-            <div id="scenario-selector"></div>
-            <SenderDevice 
-              onMessageSent={handleMessageSent}
-              scenarioSelectorContainerId="scenario-selector"
-            />
-          </div>
+      {/* Main Content Container */}
+      <div className="flex flex-col items-center">
+        {/* Devices and Scenario Container */}
+        <div className="flex items-start justify-center gap-12">
+          {/* Devices Container - Side by Side */}
+          <div className="flex items-center gap-16">
+            {/* Sender Device */}
+            <SenderDevice onMessageSent={handleMessageSent} />
 
-          {/* Right Column - Receiver Device */}
-          <div className="flex flex-col items-center gap-6">
+            {/* Receiver Device */}
             <ReceiverDevice receivedMessages={receivedMessages} />
           </div>
         </div>
